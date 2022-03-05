@@ -1,0 +1,60 @@
+version: "3"
+
+networks:
+  queue_network:
+services:
+
+  ######## config backend ########
+
+  backend:
+    build: ./backend
+    container_name: backend
+    env_file: ./backend/.env
+    environment:
+      - HOST_QUEUE=queue
+      - PORT_QUEUE=6379
+      - QUEUE_NAME=emailqueue
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./backend:/usr/src/app
+    networks:
+      - queue_network
+
+  ######## config emailWorker ########
+
+  emailworker:
+    build:
+      context: ./emailworker
+      dockerfile: Dockerfile
+    image: emailworker
+    env_file: ./emailworker/.env
+    environment:
+      - PORT=8082
+      - HOST=0.0.0.0
+      - HOST_QUEUE=queue
+      - PORT_QUEUE=6379
+      - QUEUE_NAME=emailqueue
+      - EMAIL_SENDER=emailsender@domain.com
+      - EMAIL_SENDER_PASSWORD=password
+      - HOST_SMTP=smtppro.zoho.com
+      - PORT_SMTP=465
+      - SMTP_SECURE=true
+
+    ports:
+      - "8082-8092:8082"
+    volumes:
+      - ./emailworker:/usr/src/app
+      - ./emailworker/node_modules:/usr/src/app/node_modules
+    working_dir: /usr/src/app
+    networks:
+      - queue_network
+    command: /usr/src/app/node_modules/.bin/nodemon app.js server.js
+
+  ######## config queue ########
+
+  queue:
+    image: redis:5.0.12
+    container_name: redis
+    networks:
+      - queue_network
