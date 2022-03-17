@@ -1,4 +1,9 @@
-**Dockerized email sending application, developed in nodeJS, using Redis with scalable workers.**
+**Dockerized email sending application, developed in nodeJS (Javascript and Typescript), using Redis with scalable workers.**
+
+As a prerequesite you must have installed in your environment:
+    
+- Docker
+- Docker compose
 
 How to use:
 
